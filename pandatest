@@ -1,0 +1,55 @@
+{
+ "metadata": {
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.0"
+  },
+  "orig_nbformat": 2,
+  "kernelspec": {
+   "name": "python3",
+   "display_name": "Python 3.9.0 64-bit",
+   "metadata": {
+    "interpreter": {
+     "hash": "57a6d70475a84882395e9fe3b7b94a85b95d00026437b9a59be5213b52f2e000"
+    }
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2,
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "output_type": "stream",
+     "name": "stdout",
+     "text": [
+      "10\n"
+     ]
+    }
+   ],
+   "source": [
+    "x=10\n",
+    "print(x)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ]
+}
