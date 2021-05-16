@@ -29,7 +29,7 @@ def job(lteBand,umtsBand,tacinput,queue):
     
     band_split=bands.str.split(",")
     #print(type(band_split))
-    for row in  bands.index:
+    for row in  bands.index:tobyo
         #to sum band value
         #len(band_split.get(row) get all band name in data.
         for y in range(len(band_split.get(row))):
