@@ -5,24 +5,21 @@ from sqlalchemy import create_engine
 import pymysql
 import time
 import threading
+from queue import Queue
 
-
-
-if __name__ == '__main__':
-    pymysql.install_as_MySQLdb()
+#def job(lteBand,umtsBand,tacinput,startrows,endrows):
+def job(lteBand,umtsBand,tacinput,queue):
     lteBandSum=pd.Series(0)
     umtsBandSum=pd.Series(0)
     gsmBand=0
     lteBandlist=[]
     umtsBandlist=[]
     gsmBandlist=[]
-    start = time.time()
-    excel_path='./lte.csv'
-    lteBand = pd.read_csv(excel_path,engine='python',sep='\t',index_col='NAME')
-    excel_path='./umts.csv'
-    umtsBand = pd.read_csv(excel_path,engine='python',sep='\t',index_col='id')
-    excel_path='./MSRPLUS20210408_band.csv'
-    df = pd.read_csv(excel_path,engine='python',sep='|',nrows=1400,index_col='TAC')
+    df = pd.DataFrame()
+    #df = pd.read_csv(excel_path,engine='python',sep='|',skiprows=startrows,nrows=endrows,index_col='TAC')
+    #df=tacinput[startrows:endrows]
+    df=tacinput
+    #print(len(df.index))
     #df = pd.read_csv(excel_path,engine='python',sep='|',index_col='TAC')
     #can observe memory usage
     #df.info(memory_usage='deep')
@@ -31,9 +28,9 @@ if __name__ == '__main__':
     bands=df['Bands']
     # band_split.index...get all index , in this case is tac
     #string split
-
+    
     band_split=bands.str.split(",")
-    print(type(band_split))
+    #print(type(band_split))
     for row in  bands.index:
         #to sum band value
         #len(band_split.get(row) get all band name in data.
@@ -84,7 +81,48 @@ if __name__ == '__main__':
     df['umts_band'] = umtsBandlist
     df=df.drop(columns='Bands')
     #print(df[['Bands','lte_band']])
-    print(df.columns)
+    #print(df.columns)
+    queue.put(df)
+    #return df
+
+
+if __name__ == '__main__':
+    pymysql.install_as_MySQLdb()
+    start = time.time()
+    df_result = pd.DataFrame()
+    datacount=0
+    excel_path='./lte.csv'
+    lteBand = pd.read_csv(excel_path,engine='python',sep='\t',index_col='NAME')
+    excel_path='./umts.csv'
+    umtsBand = pd.read_csv(excel_path,engine='python',sep='\t',index_col='id')
+    excel_path='./MSRPLUS20210408_band.csv'
+    tacinput = pd.read_csv(excel_path,engine='python',sep='|',nrows=100,index_col='TAC')
+
+    threads = [] 
+    q = Queue() 
+
+    bathcdata=50
+    datalen = len(tacinput.index)
+    threadNum = int(datalen/bathcdata)
+
+
+    while datacount < datalen:
+        dataStart=datacount
+        dataEnd=datacount+bathcdata
+        datacount=datacount+bathcdata   
+        #df_result=df_result.append(job(lteBand,umtsBand,tacinput[dataStart:dataEnd]))
+        #threads.append(threading.Thread(target=job, args=(lteBand,umtsBand,tacinput[dataStart:dataEnd],q)))
+        t = threading.Thread(target=job, args=(lteBand,umtsBand,tacinput[dataStart:dataEnd],q))
+        t.start()
+        threads.append(t)
+
+    for thread in threads:
+        thread.join()
+
+    for _ in range(threadNum):
+        df_result=df_result.append(q.get()) # 取出 queue 裡面的資料
+    print(len(df_result.index)) # 顯示執行後的結果
+    #df_result=df_result.append(job(lteBand,umtsBand,tacinput[10:20]))
     done = time.time()
     elapsed = done - start
     print(elapsed)
@@ -95,4 +133,4 @@ if __name__ == '__main__':
     with engine.connect() as con:
         con.execute('drop table if exists dim_handset_cap_band;')
 
-    df.to_sql('dim_handset_cap_band', engine, index= True)
+    #df_result.to_sql('dim_handset_cap_band', engine, index= True)
